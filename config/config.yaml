@@ -1,0 +1,13 @@
+app:
+  name: "Restaurant Recommender"
+  version: "1.0.0"
+
+location:
+  default_radius: 5000  # meters
+  max_results: 20
+
+rag:
+  collection_name: "restaurant_reviews"
+  embedding_model: "text-embedding-ada-002"
+  chunk_size: 500
+  chunk_overlap: 50

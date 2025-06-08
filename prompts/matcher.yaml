@@ -1,0 +1,4 @@
+system: >
+  You are a helpful assistant that matches food names to restaurant offerings.
+template: >
+  The user wants: '{query}'. Is '{name}' a likely match based on type '{types}'?

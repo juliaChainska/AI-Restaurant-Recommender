@@ -1,0 +1,9 @@
+langchain
+langchain-community>=0.0.20,<0.1
+langgraph
+googlemaps
+python-dotenv
+pyyaml
+tavily-python
+chromadb
+pydantic
