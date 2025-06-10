@@ -2,7 +2,11 @@ import streamlit as st
 from workflow.meal_recommendation_workflow import MealRecommendationWorkflow
 import requests
 import urllib.parse
+import pandas as pd
 
+st.set_page_config(page_title="Smart Meal Finder AI", page_icon="🍔")
+
+# -------------------- Helper Functions --------------------
 def geocode_location(location_name: str) -> str:
     encoded_location = urllib.parse.quote(location_name)
     url = f"https://nominatim.openstreetmap.org/search?q={encoded_location}&format=json&limit=1&addressdetails=1"
@@ -15,11 +19,13 @@ def geocode_location(location_name: str) -> str:
             return f"{lat},{lon}"
     return ""
 
-st.set_page_config(page_title="Smart Meal Finder AI", page_icon="🍔")
+# -------------------- UI Layout --------------------
 st.title("🍔 Smart Meal Finder AI")
 
 meal = st.text_input("What do you feel like eating?", placeholder="e.g. chicken burger")
 location_name = st.text_input("Enter your location", placeholder="e.g. Marszałkowska 1, Warsaw, Poland")
+
+min_rating = st.slider("Minimum Rating", 0.0, 5.0, 4.0, 0.1)
 
 if st.button("Search"):
     if not meal or not location_name:
@@ -29,13 +35,28 @@ if st.button("Search"):
         if not coordinates:
             st.error("Couldn't find the location. Try something more specific.")
         else:
-            st.info("Searching for nearby places...")
-            workflow = MealRecommendationWorkflow()
-            results = workflow.run(meal, coordinates)
+            with st.spinner("Searching for nearby places..."):
+                workflow = MealRecommendationWorkflow()
+                results = workflow.run(meal, coordinates)
 
             if not results:
                 st.warning("No recommendations found.")
             else:
+                # Filter results
+                results = [r for r in results if r.get("rating") and r["rating"] >= min_rating]
+
+                # Display map
+                coords = []
+                for r in results:
+                    try:
+                        lat, lon = map(float, r['address'].split(",")[-2:])
+                        coords.append({"lat": lat, "lon": lon})
+                    except:
+                        continue
+                if coords:
+                    st.map(pd.DataFrame(coords))
+
+                # Display results
                 for r in results:
                     st.markdown(f"### {r['name']}")
                     st.markdown(f"📍 **Address:** {r['address']}")
@@ -45,5 +66,4 @@ if st.button("Search"):
 
                     if r.get('menu_excerpt') and r['menu_excerpt'] != 'Menu not found':
                         with st.expander("📋 Menu Sample (scraped)"):
-                            st.text(r['menu_excerpt'])
-
+                            st.code(r['menu_excerpt'][:500], language="text")
