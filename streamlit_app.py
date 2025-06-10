@@ -19,6 +19,25 @@ def geocode_location(location_name: str) -> str:
             return f"{lat},{lon}"
     return ""
 
+
+# Inicjalizacja pamięci sesji
+if "results" not in st.session_state:
+    st.session_state.results = []
+if "search_history" not in st.session_state:
+    st.session_state.search_history = []
+
+# Sidebar z historią
+st.sidebar.header("📜 Search History")
+if st.sidebar.button("🧹 Clear History"):
+    st.session_state.search_history = []
+
+for i, item in enumerate(reversed(st.session_state.search_history)):
+    if st.sidebar.button(f"{item['meal']} near {item['location_name']}"):
+        # Załaduj wyniki z historii
+        st.session_state.results = item["results"]
+        st.session_state.last_query = item["meal"]
+        st.session_state.last_location = item["location_name"]
+
 # Dane wejściowe
 meal = st.text_input("🤔 What do you feel like eating?", placeholder="e.g. chicken burger")
 location_name = st.text_input("📍 Enter your location", placeholder="e.g. Marszałkowska 1, Warsaw, Poland")
@@ -26,10 +45,6 @@ location_name = st.text_input("📍 Enter your location", placeholder="e.g. Mars
 # Dodatkowe opcje
 min_rating = st.slider("⭐ Minimum rating", 0.0, 5.0, 0.0, step=0.1)
 sort_by = st.selectbox("🔀 Sort results by", ["Rating", "Number of Reviews", "Name"])
-
-# Inicjalizacja pamięci
-if "results" not in st.session_state:
-    st.session_state.results = []
 
 # Wyszukiwanie
 if st.button("🍽️ Search"):
@@ -43,13 +58,19 @@ if st.button("🍽️ Search"):
             else:
                 workflow = MealRecommendationWorkflow()
                 results = workflow.run(meal, coordinates)
-                st.session_state.results = results  # Zapisujemy w sesji
+                st.session_state.results = results
+                st.session_state.last_query = meal
+                st.session_state.last_location = location_name
+                st.session_state.search_history.append({
+                    "meal": meal,
+                    "location_name": location_name,
+                    "results": results
+                })
 
+# Wyświetlanie wyników
 if st.session_state.results:
-    # Filtrowanie
     filtered = [r for r in st.session_state.results if r["rating"] and float(r["rating"]) >= min_rating]
 
-    # Sortowanie
     if sort_by == "Rating":
         filtered.sort(key=lambda x: x.get("rating", 0), reverse=True)
     elif sort_by == "Number of Reviews":
@@ -70,6 +91,5 @@ if st.session_state.results:
             with st.expander("📋 Menu Sample (scraped)"):
                 st.code(r['menu_excerpt'], language="text")
 
-# Brak wyników po kliknięciu
 elif "results" in st.session_state and not st.session_state.results:
     st.warning("No recommendations found. Try a different meal or location.")
