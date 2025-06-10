@@ -64,11 +64,11 @@ if st.session_state.results:
     for r in filtered:
         st.markdown(f"### 🍴 {r['name']}")
         st.markdown(f"📍 **Address:** {r['address']}")
-        if r.get("lat") and r.get("lng"):
-            maps_url = f"https://www.google.com/maps/search/?api=1&query={r['lat']},{r['lng']}"
+        if r.get("place_id"):
+            maps_url = f"https://www.google.com/maps/place/?q=place_id:{r['place_id']}"
             st.markdown(f"[🗺️ View on Google Maps]({maps_url})", unsafe_allow_html=True)
         if r.get("lat") and r.get("lng"):
-            maps_embed = f"https://maps.google.com/maps?q={r['lat']},{r['lng']}&z=15&output=embed"
+            maps_embed = f"https://www.google.com/maps/place/?q=place_id:{r['place_id']}&z=15&output=embed"
             st.components.v1.html(f'<iframe src="{maps_embed}" width="100%" height="300"></iframe>', height=300)
         st.markdown(f"⭐ **Rating:** {r['rating']} ({r['user_ratings_total']} reviews)")
         st.markdown(f"🔍 **Match Summary:** {r['match_summary']}")
