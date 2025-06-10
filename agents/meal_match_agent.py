@@ -28,6 +28,8 @@ class MealMatchAgent:
             recommendations.append({
                 "name": place.get("name"),
                 "address": place.get("formatted_address"),
+                "lat": place.get("geometry", {}).get("location", {}).get("lat"),
+                "lng": place.get("geometry", {}).get("location", {}).get("lng"),
                 "match_summary": summary,
                 "rating": place.get("rating"),
                 "user_ratings_total": place.get("user_ratings_total"),
