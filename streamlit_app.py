@@ -23,9 +23,11 @@ def geocode_location(location_name: str) -> str:
 meal = st.text_input("🤔 What do you feel like eating?", placeholder="e.g. chicken burger")
 location_name = st.text_input("📍 Enter your location", placeholder="e.g. Marszałkowska 1, Warsaw, Poland")
 
-# Dodatkowe opcje
-min_rating = st.slider("⭐ Minimum rating", 0.0, 5.0, 0.0, step=0.1)
-sort_by = st.selectbox("🔀 Sort results by", ["Rating", "Number of Reviews", "Name"])
+col1, col2 = st.columns(2)
+with col1:
+    min_rating = st.slider("Minimum rating", 0.0, 5.0, 0.0, step=0.1)
+with col2:
+    sort_by = st.selectbox("Sort by", ["Rating", "Number of Reviews", "Name"])
 
 # Inicjalizacja pamięci
 if "results" not in st.session_state:
@@ -62,6 +64,12 @@ if st.session_state.results:
     for r in filtered:
         st.markdown(f"### 🍴 {r['name']}")
         st.markdown(f"📍 **Address:** {r['address']}")
+        if r.get("lat") and r.get("lng"):
+            maps_url = f"https://www.google.com/maps/search/?api=1&query={r['lat']},{r['lng']}"
+            st.markdown(f"[🗺️ View on Google Maps]({maps_url})", unsafe_allow_html=True)
+        if r.get("lat") and r.get("lng"):
+            maps_embed = f"https://maps.google.com/maps?q={r['lat']},{r['lng']}&z=15&output=embed"
+            st.components.v1.html(f'<iframe src="{maps_embed}" width="100%" height="300"></iframe>', height=300)
         st.markdown(f"⭐ **Rating:** {r['rating']} ({r['user_ratings_total']} reviews)")
         st.markdown(f"🔍 **Match Summary:** {r['match_summary']}")
         st.markdown(f"📝 **Review Summary:** {r['summary']}")
