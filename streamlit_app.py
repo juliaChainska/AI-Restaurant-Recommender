@@ -19,31 +19,28 @@ def geocode_location(location_name: str) -> str:
             return f"{lat},{lon}"
     return ""
 
-
 # Dane wejściowe
-meal = st.text_input("What do you feel like eating?", placeholder="e.g. chicken burger")
-location_name = st.text_input("Enter your location", placeholder="e.g. Marszałkowska 1, Warsaw, Poland")
+meal = st.text_input("🤔 What do you feel like eating?", placeholder="e.g. chicken burger")
+location_name = st.text_input("📍 Enter your location", placeholder="e.g. Marszałkowska 1, Warsaw, Poland")
 
-col1, col2 = st.columns(2)
-with col1:
-    min_rating = st.slider("Minimum rating", 0.0, 5.0, 0.0, step=0.1)
-with col2:
-    sort_by = st.selectbox("Sort by", ["Rating", "Number of Reviews", "Name"])
+# Dodatkowe opcje
+min_rating = st.slider("⭐ Minimum rating", 0.0, 5.0, 0.0, step=0.1)
+sort_by = st.selectbox("🔀 Sort results by", ["Rating", "Number of Reviews", "Name"])
 
-# Sstate aby sortowac
+# Inicjalizacja pamięci
 if "results" not in st.session_state:
     st.session_state.results = []
 
 # Wyszukiwanie
-if st.button("Search"):
+if st.button("🍽️ Search"):
     if not meal or not location_name:
         st.warning("Please fill in both fields.")
     else:
-        coordinates = geocode_location(location_name)
-        if not coordinates:
-            st.error("Couldn't find the location. Try something more specific.")
-        else:
-            with st.spinner("Searching for nearby places..."):
+        with st.spinner("Getting hungry..."):
+            coordinates = geocode_location(location_name)
+            if not coordinates:
+                st.error("Couldn't find the location. Try something more specific.")
+            else:
                 workflow = MealRecommendationWorkflow()
                 results = workflow.run(meal, coordinates)
                 st.session_state.results = results  # Zapisujemy w sesji
@@ -72,3 +69,7 @@ if st.session_state.results:
         if r.get('menu_excerpt') and r['menu_excerpt'] != 'Menu not found':
             with st.expander("📋 Menu Sample (scraped)"):
                 st.code(r['menu_excerpt'], language="text")
+
+# Brak wyników po kliknięciu
+elif "results" in st.session_state and not st.session_state.results:
+    st.warning("No recommendations found. Try a different meal or location.")
