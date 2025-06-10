@@ -25,7 +25,11 @@ st.title("🍔 Smart Meal Finder AI")
 meal = st.text_input("What do you feel like eating?", placeholder="e.g. chicken burger")
 location_name = st.text_input("Enter your location", placeholder="e.g. Marszałkowska 1, Warsaw, Poland")
 
-min_rating = st.slider("Minimum Rating", 0.0, 5.0, 4.0, 0.1)
+col1, col2 = st.columns(2)
+with col1:
+    min_rating = st.slider("Minimum Rating", 0.0, 5.0, 4.0, 0.1)
+with col2:
+    sort_by = st.selectbox("Sort by", ["Rating", "Reviews", "Name"])
 
 if st.button("Search"):
     if not meal or not location_name:
@@ -44,6 +48,14 @@ if st.button("Search"):
             else:
                 # Filter results
                 results = [r for r in results if r.get("rating") and r["rating"] >= min_rating]
+
+                # Sort results
+                if sort_by == "Rating":
+                    results.sort(key=lambda x: x.get("rating", 0), reverse=True)
+                elif sort_by == "Reviews":
+                    results.sort(key=lambda x: x.get("user_ratings_total", 0), reverse=True)
+                elif sort_by == "Name":
+                    results.sort(key=lambda x: x.get("name", ""))
 
                 # Display map
                 coords = []
