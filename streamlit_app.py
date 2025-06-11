@@ -68,8 +68,12 @@ if st.session_state.results:
             maps_url = f"https://www.google.com/maps/place/?q=place_id:{r['place_id']}"
             st.markdown(f"[🗺️ View on Google Maps]({maps_url})", unsafe_allow_html=True)
         if r.get("lat") and r.get("lng"):
-            maps_embed = f"https://www.google.com/maps/place/?q=place_id:{r['place_id']}&z=15&output=embed"
-            st.components.v1.html(f'<iframe src="{maps_embed}" width="100%" height="300"></iframe>', height=300)
+            lat, lng = r["lat"], r["lng"]
+            iframe_url = f"https://maps.google.com/maps?q={lat},{lng}&z=15&output=embed"
+            st.markdown(
+                f'<iframe src="{iframe_url}" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy"></iframe>',
+                unsafe_allow_html=True
+    )
         st.markdown(f"⭐ **Rating:** {r['rating']} ({r['user_ratings_total']} reviews)")
         st.markdown(f"🔍 **Match Summary:** {r['match_summary']}")
         st.markdown(f"📝 **Review Summary:** {r['summary']}")
