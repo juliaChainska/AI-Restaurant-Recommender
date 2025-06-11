@@ -6,23 +6,9 @@ class MealSuggesterAgent:
     def __init__(self):
         self.llm = ChatOpenAI(temperature=0.2)
 
-    def get_category_suggestions(self):
+    def get_general_suggestions(self):
         prompt = (
-            "Return a JSON list of 4 popular general meal categories, each with an emoji and short label. "
-            "Example format: [[\"🍗\", \"Meat\"], [\"🥦\", \"Vege\"], [\"🍭\", \"Sweets\"]]"
-        )
-        response = self.llm.invoke([HumanMessage(content=prompt)])
-
-        try:
-            return json.loads(response.content)
-        except json.JSONDecodeError:
-            print("⚠️ Could not parse LLM response:", response.content)
-            return []
-
-
-    def get_general_suggestions(self, category: str):
-        prompt = (
-            f"Return a JSON list of 8 popular meals based on category {category.lower()}, each with an emoji and short label. "
+            f"Return a JSON list of 8 popular meals, each with an emoji and short label."
             "Example format: [[\"🍔\", \"Burger\"], [\"🍕\", \"Pizza\"], [\"🍣\", \"Sushi\"]]"
         )
         response = self.llm.invoke([HumanMessage(content=prompt)])
