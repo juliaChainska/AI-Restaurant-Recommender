@@ -2,6 +2,8 @@ import streamlit as st
 from workflow.meal_recommendation_workflow import MealRecommendationWorkflow
 import requests
 import urllib.parse
+import time
+import threading
 
 # -------------------- Page Configuration --------------------
 st.set_page_config(page_title="Smart Meal Finder AI", page_icon="🍔")
@@ -38,14 +40,50 @@ if st.button("🍽️ Search"):
     if not meal or not location_name:
         st.warning("Please fill in both fields.")
     else:
-        with st.spinner("Getting hungry..."):
+        placeholder = st.empty()
+        food_emojis = ["🍦", "🍤", "🍔", "🍕", "🍫", "🧋", "🌮", "🍟", "🥞", "🍩"]
+
+        # emoji w pętli
+        loading = True
+        i = 0
+
+        start_time = time.time()
+        timeout = 10  # maks. czas trwania
+
+        def perform_search():
             coordinates = geocode_location(location_name)
             if not coordinates:
-                st.error("Couldn't find the location. Try something more specific.")
-            else:
-                workflow = MealRecommendationWorkflow()
-                results = workflow.run(meal, coordinates)
-                st.session_state.results = results  # Zapisujemy w sesji
+                return None, "Couldn't find the location. Try something more specific."
+            workflow = MealRecommendationWorkflow()
+            results = workflow.run(meal, coordinates)
+            return results, None
+
+        search_result = [None]
+        error_result = [None]
+
+        def search_task():
+            results, error = perform_search()
+            search_result[0] = results
+            error_result[0] = error
+
+        import threading
+        t = threading.Thread(target=search_task)
+        t.start()
+
+        # w petli dopuki trwa watek
+        while t.is_alive():
+            emoji = food_emojis[i % len(food_emojis)]
+            placeholder.markdown(f"### {emoji} Getting hungry...")
+            time.sleep(0.3)
+            i += 1
+
+        t.join()
+        placeholder.empty()
+
+        if error_result[0]:
+            st.error(error_result[0])
+        else:
+            st.session_state.results = search_result[0]
 
 if st.session_state.results:
     # Filtrowanie
