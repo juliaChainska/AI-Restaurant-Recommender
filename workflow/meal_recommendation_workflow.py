@@ -5,8 +5,6 @@ from agents.meal_match_agent import MealMatchAgent
 from agents.review_analyzer_agent import ReviewAnalyzerAgent
 from dotenv import load_dotenv
 
-
-
 load_dotenv()
 
 class MealRecommendationWorkflow:
@@ -15,9 +13,9 @@ class MealRecommendationWorkflow:
         self.meal_agent = MealMatchAgent(self.api_key)
         self.review_agent = ReviewAnalyzerAgent(self.api_key)
 
-    def run(self, user_meal: str, user_location: str) -> list:
+    def run(self, user_meal: str, user_location: str, radius: int = 1500) -> list:
         print(f"Searching for: {user_meal} near {user_location}...\n")
-        meals = self.meal_agent.find_meals(user_meal, user_location)
+        meals = self.meal_agent.find_meals(user_meal, user_location, radius=radius)
 
         final_recommendations = []
 

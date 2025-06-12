@@ -51,12 +51,15 @@ if st.session_state.refined:
 # -------------------- Inputs --------------------
 meal = st.text_input("🤔 What do you feel like eating?", value=st.session_state.meal, placeholder="e.g. chicken burger")
 location_name = st.text_input("📍 Enter your location", placeholder="e.g. Marszałkowska 1, Warsaw, Poland")
-
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 with col1:
     min_rating = st.slider("Minimum rating", 0.0, 5.0, 0.0, step=0.1)
+
 with col2:
     sort_by = st.selectbox("Sort by", ["Rating", "Number of Reviews", "Name"])
+
+with col3:
+    radius_km = st.number_input("Max distance (km)", min_value=0.0, step=0.5, value=0.0)
 
 # -------------------- Helper --------------------
 def geocode_location(location_name: str) -> str:
@@ -93,7 +96,8 @@ if st.button("🍽️ Search"):
             if not coordinates:
                 return None, "Couldn't find the location. Try something more specific."
             workflow = MealRecommendationWorkflow()
-            results = workflow.run(meal, coordinates)
+            radius_m = int(radius_km * 1000) if radius_km > 0 else None
+            results = workflow.run(meal, coordinates, radius=radius_m)
             return results, None
 
         search_result = [None]

@@ -18,8 +18,8 @@ class MealMatchAgent:
         self.llm = ChatOpenAI(temperature=0.2)
         self.prompt_manager = PromptManager()
 
-    def find_meals(self, user_input: str, location: str) -> list:
-        raw_results = self.places_tool.search_places(user_input, location)
+    def find_meals(self, user_input: str, location: str, radius: int = 1500) -> list:
+        raw_results = self.places_tool.search_places(user_input, location, radius=radius)
         recommendations = []
 
         for place in raw_results[:10]:
