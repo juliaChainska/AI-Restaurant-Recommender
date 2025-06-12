@@ -73,7 +73,7 @@ def geocode_location(location_name: str) -> str:
 
 # -------------------- Results state --------------------
 if "results" not in st.session_state:
-    st.session_state.results = []
+    st.session_state.results = None
 
 # -------------------- Search trigger --------------------
 if st.button("🍽️ Search"):
@@ -119,7 +119,7 @@ if st.button("🍽️ Search"):
         if error_result[0]:
             st.error(error_result[0])
         else:
-            st.session_state.results = search_result[0]
+            st.session_state.results = search_result[0] if search_result[0] else []
 
 # -------------------- Results Display --------------------
 if st.session_state.results:
@@ -162,5 +162,5 @@ if st.session_state.results:
     ).properties(title="Ratings Distribution")
     st.altair_chart(chart, use_container_width=True)
 
-elif "results" in st.session_state and not st.session_state.results:
+elif st.session_state.results == []:
     st.warning("No recommendations found. Try a different meal or location.")
