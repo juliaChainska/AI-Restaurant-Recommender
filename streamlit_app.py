@@ -51,6 +51,11 @@ if st.session_state.refined:
 # -------------------- Inputs --------------------
 meal = st.text_input("🤔 What do you feel like eating?", value=st.session_state.meal, placeholder="e.g. chicken burger")
 location_name = st.text_input("📍 Enter your location", placeholder="e.g. Marszałkowska 1, Warsaw, Poland")
+language = st.selectbox(
+    "🌐 In which language should we show the results?",
+    ["English", "Polish", "German", "French"]
+)
+
 
 col1, col2 = st.columns(2)
 with col1:
@@ -92,7 +97,7 @@ if st.button("🍽️ Search"):
             coordinates = geocode_location(location_name)
             if not coordinates:
                 return None, "Couldn't find the location. Try something more specific."
-            workflow = MealRecommendationWorkflow()
+            workflow = MealRecommendationWorkflow(language=language)
             results = workflow.run(meal, coordinates)
             return results, None
 
