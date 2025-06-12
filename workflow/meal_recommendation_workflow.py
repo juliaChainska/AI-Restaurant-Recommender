@@ -11,11 +11,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class MealRecommendationWorkflow:
-    # def __init__(self):
-    #     self.api_key = os.getenv("GOOGLE_MAPS_API_KEY")
-    #     self.meal_agent = MealMatchAgent(self.api_key)
-    #     self.review_agent = ReviewAnalyzerAgent(self.api_key)
-
     def __init__(self, language: str = "English"):
         self.api_key = os.getenv("GOOGLE_MAPS_API_KEY")
         self.meal_agent = MealMatchAgent(self.api_key)
