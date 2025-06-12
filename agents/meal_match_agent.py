@@ -28,11 +28,15 @@ class MealMatchAgent:
             recommendations.append({
                 "name": place.get("name"),
                 "address": place.get("formatted_address"),
+                "lat": place.get("geometry", {}).get("location", {}).get("lat"),
+                "lng": place.get("geometry", {}).get("location", {}).get("lng"),
+                "place_id": place.get("place_id"),
                 "match_summary": summary,
                 "rating": place.get("rating"),
                 "user_ratings_total": place.get("user_ratings_total"),
                 "menu_excerpt": menu_text[:500] if menu_text else "Menu not found"
-            })
+            }) 
+
         return recommendations
 
     def _summarize_match(self, query: str, place: dict, menu: str = "") -> str:
