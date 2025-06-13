@@ -19,6 +19,7 @@ class GooglePlacesTool:
         params = {
             "query": query,
             "location": location,
+            "radius": radius,
             "key": self.api_key
         }
         if radius:
