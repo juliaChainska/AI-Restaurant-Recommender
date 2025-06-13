@@ -6,8 +6,6 @@ from agents.review_analyzer_agent import ReviewAnalyzerAgent
 from agents.translator_agent import TranslationAgent
 from dotenv import load_dotenv
 
-
-
 load_dotenv()
 
 class MealRecommendationWorkflow:
@@ -18,9 +16,9 @@ class MealRecommendationWorkflow:
         self.language = language
         self.translator = None if language.lower() in ["english", "en"] else TranslationAgent(language)
 
-    def run(self, user_meal: str, user_location: str) -> list:
+    def run(self, user_meal: str, user_location: str, radius: int = 1500) -> list:
         print(f"Searching for: {user_meal} near {user_location}...\n")
-        meals = self.meal_agent.find_meals(user_meal, user_location)
+        meals = self.meal_agent.find_meals(user_meal, user_location, radius=radius)
 
         final_recommendations = []
 
@@ -48,7 +46,6 @@ class MealRecommendationWorkflow:
         if results:
             return results[0].get("place_id")
         return None
-
 
 # Example use
 if __name__ == "__main__":

@@ -6,11 +6,12 @@ import requests
 import urllib.parse
 import pandas as pd
 import altair as alt
+import time
+import threading
 
 # -------------------- Page Configuration --------------------
 st.set_page_config(page_title="Smart Meal Finder AI", page_icon="🍔", layout="wide")
 st.title("🍽️ Smart Meal Finder AI")
-
 
 # -------------------- Helper --------------------
 def geocode_location(location_name: str) -> str:
@@ -25,14 +26,12 @@ def geocode_location(location_name: str) -> str:
             return f"{lat},{lon}"
     return ""
 
-
 def reverse_geocode(lat, lon):
     url = f"https://nominatim.openstreetmap.org/reverse?lat={lat}&lon={lon}&format=json"
     res = requests.get(url, headers={"User-Agent": "SmartMealFinder/1.0"})
     if res.status_code == 200:
         return res.json().get("display_name", "")
     return ""
-
 
 # -------------------- Init agent and state --------------------
 if "suggester" not in st.session_state:
@@ -72,20 +71,21 @@ with st.container():
 
         if st.session_state.refined:
             st.markdown(f"#### 🔍 Variants of {st.session_state.clicked_category}")
-            variant_cols = st.columns(4)
+            variant_cols = st.columns(2)
             for idx, variant in enumerate(st.session_state.refined):
-                if variant_cols[idx % 4].button(f"🍽️ {variant}"):
+                if variant_cols[idx % 2].button(f"🍽️ {variant}"):
                     st.session_state.meal = variant
                     st.session_state.refined = []
                     st.session_state.clicked_category = None
 
         meal = st.text_input("🤔 What do you feel like eating?", value=st.session_state.meal,
                              placeholder="e.g. chicken burger")
+        col1, col2 = st.columns(2)
+        with col1:
+            location = streamlit_geolocation()
+        with col2:
+            radius_km = st.number_input("Max distance (km)", min_value=0.0, step=0.5, value=0.0)
 
-        # Get geolocation
-        location = streamlit_geolocation()
-
-        # Update user_location if geolocation available and changed
         if location and location.get("latitude") and location.get("longitude"):
             new_location_str = reverse_geocode(location["latitude"], location["longitude"])
             if new_location_str and new_location_str != st.session_state.user_location:
@@ -112,26 +112,52 @@ with st.container():
             if not meal.strip() or not location_name.strip():
                 st.warning("Please fill in both fields.")
             else:
-                with st.spinner("🍽️ Searching for delicious meals..."):
+                placeholder = st.empty()
+                food_emojis = ["🍦", "🍤", "🍔", "🍕", "🥗", "🧋", "🌮", "🍟", "🥞"]
+
+                def perform_search():
                     coordinates = geocode_location(location_name)
                     if not coordinates:
-                        st.error("Couldn't find the location. Try something more specific.")
-                    else:
-                        workflow = MealRecommendationWorkflow(language=language)
-                        results = workflow.run(meal, coordinates)
-                        st.session_state.results = results or []
+                        return None, "Couldn't find the location. Try something more specific."
+                    workflow = MealRecommendationWorkflow(language=language)
+                    radius_m = int(radius_km * 1000) if radius_km > 0 else None
+                    results = workflow.run(meal, coordinates, radius=radius_m)
+                    return results, None
+
+                search_result = [None]
+                error_result = [None]
+
+                def search_task():
+                    results, error = perform_search()
+                    search_result[0] = results
+                    error_result[0] = error
+
+                t = threading.Thread(target=search_task)
+                t.start()
+
+                i = 0
+                while t.is_alive():
+                    emoji = food_emojis[i % len(food_emojis)]
+                    placeholder.markdown(f"### {emoji} Getting hungry...")
+                    time.sleep(0.3)
+                    i += 1
+
+                t.join()
+                placeholder.empty()
+
+                if error_result[0]:
+                    st.error(error_result[0])
+                else:
+                    st.session_state.results = search_result[0] if search_result[0] else []
 
     # --------------- Right Column: Display Results or Welcome Message ---------------
     with right_col:
         if st.session_state.results is None:
-            # Display welcome message when no results yet
             st.markdown("## 👋 Welcome to Smart Meal Finder AI!")
             st.markdown("""
             ### Use the search panel on the left to find amazing restaurants and meals near you.
             """)
-
         else:
-            # Display search results
             filtered = [
                 r for r in st.session_state.results
                 if r.get("rating") and float(r.get("rating", 0)) >= min_rating
@@ -145,7 +171,7 @@ with st.container():
                 filtered.sort(key=lambda x: x.get("name", "").lower())
 
             if filtered:
-                st.markdown(f"## 🔎 Found {len(filtered)} recommendations")
+                st.markdown(f"## 🔍 Found {len(filtered)} recommendations")
 
                 for r in filtered:
                     st.markdown(f"### 🍴 {r.get('name', 'Unknown')}")
@@ -165,6 +191,17 @@ with st.container():
                         )
 
                     st.markdown(f"⭐ **Rating:** {r.get('rating', 'N/A')} ({r.get('user_ratings_total', 0)} reviews)")
+
+                    if r.get("price"):
+                        st.markdown(f"💰 **Price Range:** {r['price']}")
+
+                    if r.get("opening_hours"):
+                        hours = r["opening_hours"].get("weekday_text", [])
+                        if hours:
+                            with st.expander("🕒 Opening Hours"):
+                                for line in hours:
+                                    st.markdown(f"- {line}")
+
                     st.markdown(f"🔍 **Match Summary:** {r.get('match_summary', 'N/A')}")
                     st.markdown(f"📝 **Review Summary:** {r.get('summary', 'N/A')}")
 
@@ -179,6 +216,5 @@ with st.container():
                         y=alt.Y('count()', title='Count')
                     ).properties(title="Ratings Distribution")
                     st.altair_chart(chart, use_container_width=True)
-
             else:
                 st.warning("No recommendations found. Try a different meal or location.")

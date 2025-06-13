@@ -4,7 +4,7 @@ import os
 import requests
 from typing import List, Dict
 from dotenv import load_dotenv
-
+from typing import Optional
 
 load_dotenv()
 
@@ -14,7 +14,7 @@ class GooglePlacesTool:
     def __init__(self, api_key: str = GOOGLE_MAPS_API_KEY):
         self.api_key = api_key
 
-    def search_places(self, query: str, location: str, radius: int = 1500) -> List[Dict]:
+    def search_places(self, query: str, location: str, radius: Optional[int] = None) -> List[Dict]:
         url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
         params = {
             "query": query,
@@ -22,6 +22,8 @@ class GooglePlacesTool:
             "radius": radius,
             "key": self.api_key
         }
+        if radius:
+            params["radius"] = radius
         response = requests.get(url, params=params)
         if response.status_code == 200:
             data = response.json()
@@ -34,7 +36,7 @@ class GooglePlacesTool:
         url = "https://maps.googleapis.com/maps/api/place/details/json"
         params = {
             "place_id": place_id,
-            "fields": "name,rating,review,user_ratings_total,formatted_address",
+            "fields": "name,rating,review,user_ratings_total,formatted_address,opening_hours,price_level",
             "key": self.api_key
         }
         response = requests.get(url, params=params)
