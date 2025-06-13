@@ -162,6 +162,9 @@ if st.session_state.results:
                 with st.expander("🕒 Opening Hours"):
                     for line in hours:
                         st.markdown(f"- {line}")
+            else:
+                st.markdown("🕒 No opening hours info available.")
+
 
         st.markdown(f"🔍 **Match Summary:** {r['match_summary']}")
         st.markdown(f"📝 **Review Summary:** {r['summary']}")
