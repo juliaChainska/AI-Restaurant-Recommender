@@ -3,15 +3,18 @@ import warnings
 warnings.filterwarnings("ignore")
 from agents.meal_match_agent import MealMatchAgent
 from agents.review_analyzer_agent import ReviewAnalyzerAgent
+from agents.translator_agent import TranslationAgent
 from dotenv import load_dotenv
 
 load_dotenv()
 
 class MealRecommendationWorkflow:
-    def __init__(self):
+    def __init__(self, language: str = "English"):
         self.api_key = os.getenv("GOOGLE_MAPS_API_KEY")
         self.meal_agent = MealMatchAgent(self.api_key)
         self.review_agent = ReviewAnalyzerAgent(self.api_key)
+        self.language = language
+        self.translator = None if language.lower() in ["english", "en"] else TranslationAgent(language)
 
     def run(self, user_meal: str, user_location: str, radius: int = 1500) -> list:
         print(f"Searching for: {user_meal} near {user_location}...\n")
@@ -27,6 +30,12 @@ class MealRecommendationWorkflow:
                     **meal,
                     **review_summary
                 }
+
+                # Translate if needed
+                if self.translator:
+                    combined["match_summary"] = self.translator.translate(combined["match_summary"])
+                    combined["summary"] = self.translator.translate(combined["summary"])
+
                 final_recommendations.append(combined)
 
         return final_recommendations
@@ -40,7 +49,7 @@ class MealRecommendationWorkflow:
 
 # Example use
 if __name__ == "__main__":
-    workflow = MealRecommendationWorkflow()
+    workflow = MealRecommendationWorkflow(language="Polish")
     user_input = "chicken burger"
     user_location = "52.237049,21.017532"  # Warsaw (lat,lng)
     results = workflow.run(user_input, user_location)

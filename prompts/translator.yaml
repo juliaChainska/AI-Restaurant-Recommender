@@ -1,0 +1,7 @@
+system: >
+  You are a helpful assistant that translates text clearly and accurately, preserving tone and meaning.
+
+template: >
+  Please translate the following text into {language}:
+
+  "{text}"
