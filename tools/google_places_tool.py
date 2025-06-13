@@ -6,8 +6,6 @@ from typing import List, Dict
 from dotenv import load_dotenv
 from typing import Optional
 
-
-
 load_dotenv()
 
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
@@ -37,7 +35,7 @@ class GooglePlacesTool:
         url = "https://maps.googleapis.com/maps/api/place/details/json"
         params = {
             "place_id": place_id,
-            "fields": "name,rating,review,user_ratings_total,formatted_address",
+            "fields": "name,rating,review,user_ratings_total,formatted_address,opening_hours,price_level",
             "key": self.api_key
         }
         response = requests.get(url, params=params)

@@ -152,6 +152,17 @@ if st.session_state.results:
                 unsafe_allow_html=True
             )
         st.markdown(f"⭐ **Rating:** {r['rating']} ({r['user_ratings_total']} reviews)")
+
+        if r.get("price"):
+            st.markdown(f"💰 **Price Range:** {r['price']}")
+
+        if r.get("opening_hours"):
+            hours = r["opening_hours"].get("weekday_text", [])
+            if hours:
+                with st.expander("🕒 Opening Hours"):
+                    for line in hours:
+                        st.markdown(f"- {line}")
+
         st.markdown(f"🔍 **Match Summary:** {r['match_summary']}")
         st.markdown(f"📝 **Review Summary:** {r['summary']}")
 

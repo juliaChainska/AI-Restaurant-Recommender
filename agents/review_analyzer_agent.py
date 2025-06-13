@@ -28,11 +28,20 @@ class ReviewAnalyzerAgent:
             HumanMessage(content=prompt_data["template"].format(reviews=combined_text))
         ]
         response = self.llm.invoke(messages)
-
+        price_level = details.get("price_level")
+        price_description = {
+            0: "Free",
+            1: "$ Inexpensive",
+            2: "$$ Moderate",
+            3: "$$$ Expensive",
+            4: "$$$$ Very Expensive"
+        }.get(price_level, "Unknown")
         return {
             "summary": response.content,
             "rating": details.get("rating"),
             "user_ratings_total": details.get("user_ratings_total"),
             "address": details.get("formatted_address"),
-            "name": details.get("name")
+            "name": details.get("name"),
+            "price": price_description,
+            "opening_hours": details.get("opening_hours")
         }

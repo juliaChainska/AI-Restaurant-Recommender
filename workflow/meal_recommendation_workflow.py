@@ -38,7 +38,6 @@ class MealRecommendationWorkflow:
             return results[0].get("place_id")
         return None
 
-
 # Example use
 if __name__ == "__main__":
     workflow = MealRecommendationWorkflow()
