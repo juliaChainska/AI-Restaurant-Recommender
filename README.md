@@ -4,6 +4,7 @@ Smart Meal Finder AI o aplikacja oparta na sztucznej inteligencji, która pomaga
 
 System oparty jest na wieloagentowej architekturze wykorzystującej LangChain (LLM) i integrację z Google Places API.
 
+![](https://github.com/juliaChainska/AI-Restaurant-Recommender/blob/main/Diagram.png)
 ---
 
 ## Funkcjonalności
